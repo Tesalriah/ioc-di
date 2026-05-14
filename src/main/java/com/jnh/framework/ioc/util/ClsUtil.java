@@ -3,6 +3,7 @@ package com.jnh.framework.ioc.util;
 import lombok.SneakyThrows;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Parameter;
 
 public class ClsUtil {
     @SneakyThrows // 예외 처리 자동처리, forName 은 예외 처리 선언을 해야하나 생략가능
@@ -24,5 +25,13 @@ public class ClsUtil {
 
     private static <T> Constructor<T> getConstructor(Class<T> cls, Object[] args) {
         return (Constructor<T>) cls.getDeclaredConstructors()[0];
+    }
+
+    public static Parameter[] getParameters(String clsPath, Object[] args) {
+        Class<?> cls = loadClass(clsPath);
+
+        Constructor<?> constructor = getConstructor(cls, args);
+
+        return constructor.getParameters();
     }
 }
