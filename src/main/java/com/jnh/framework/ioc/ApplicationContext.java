@@ -1,37 +1,38 @@
 package com.jnh.framework.ioc;
 
-import com.jnh.domain.testPost.testPost.repository.TestPostRepository;
-import com.jnh.domain.testPost.testPost.service.TestFacadePostService;
-import com.jnh.domain.testPost.testPost.service.TestPostService;
+import com.jnh.framework.annotations.Component;
+import com.jnh.framework.ioc.util.ClsUtil;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ApplicationContext {
     private Map<String, Object> beans;
-    private String basePakage;
+    private String basePackage;
+    private Map<String, Class<?>> beanClasses;
 
     public ApplicationContext(String basePakage){
-        this.basePakage = basePakage;
+        this.basePackage = basePakage;
         beans = new HashMap<>();
     }
 
     public void init() {
+        beanClasses = ClsUtil.annotatedClasses(basePackage, Component.class);
     }
 
     public <T> T getBean(String beanName) {
         Object bean = beans.get(beanName);
 
         if(bean == null){
-            bean = switch (beanName){
-                case "testFacadePostService" -> new TestFacadePostService(
-                        getBean("testPostService"),
-                        getBean("testPostRepository")
-                );
-                case "testPostService" -> (T) new TestPostService(getBean("testPostRepository"));
-                case "testPostRepository" -> (T) new TestPostRepository();
-                default -> null;
-            };
+            Class<T> cls = (Class<T>) beanClasses.get(beanName);
+            String[] parameterNames = ClsUtil.getParameterNames(cls);
+
+            Object[] args = Arrays.stream(parameterNames)
+                    .map(this::getBean)
+                    .toArray();
+
+            bean = ClsUtil.construct(cls, args);
             beans.put(beanName, bean);
         }
 

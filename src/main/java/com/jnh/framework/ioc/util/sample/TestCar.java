@@ -10,4 +10,9 @@ import lombok.Setter;
 public class TestCar {
     String name;
     int number;
+
+    public TestCar() {
+        this.name = "Benz";
+        this.number = 9876;
+    }
 }

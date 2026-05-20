@@ -1,37 +1,122 @@
 package com.jnh.framework.ioc.util;
 
 import lombok.SneakyThrows;
+import org.reflections.Reflections;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
+import static org.reflections.scanners.Scanners.TypesAnnotated;
 public class ClsUtil {
-    @SneakyThrows // 예외 처리 자동처리, forName 은 예외 처리 선언을 해야하나 생략가능
-    public static <T> Class<T> loadClass(String clsPath) { // <T> 제네릭 타입파라미터 선언 - 메서드 안에서 T 타입 사용 가능
-        return (Class<T>) Class.forName(clsPath); // 문자열로 주어진 클래스 이름을 실제 클래스로 로드해 리턴
-        // Class<?> 이렇게 하면 매번 캐스팅이 필요하다. 그래서 여기서는 제네릭으로 형변환 해주면 호출하는 쪽에서 안전하게 사용가능
-    }
 
-    public static <T> T construct(String clsPath, Object[] args) {
-        return construct(loadClass(clsPath), args);
+    @SneakyThrows
+    public static <T> Class <T> loadClass(String clsPath) {
+        return (Class<T>) Class.forName(clsPath);
     }
 
     @SneakyThrows
-    public static <T> T construct(Class<T> cls, Object[] args ) {
-        Constructor<T> constructor = getConstructor(cls,args);
+    public static <T> T construct(String clsPath, Object[] args) {
+        Class<T> cls = loadClass(clsPath);
+
+        return construct(cls, args);
+    }
+
+    @SneakyThrows
+    public static <T> T construct(Class<T> cls, Object[] args) {
+        Constructor<T> constructor = getConstructor(cls, args);
 
         return constructor.newInstance(args);
     }
 
-    private static <T> Constructor<T> getConstructor(Class<T> cls, Object[] args) {
-        return (Constructor<T>) cls.getDeclaredConstructors()[0];
+    @SneakyThrows
+    private static <T> Constructor<T>  getConstructor(Class<T> cls, Object[] args) {
+        Class[] argType = getTypes(args);
+
+        return cls.getConstructor(argType);
+    }
+
+    private static Class[] getTypes(Object[] args) {
+        if (args instanceof Class[]) {
+            return (Class[]) args;
+        }
+
+        return Arrays.stream(args)
+                .map(e -> {
+                    if (e instanceof Boolean) {
+                        return boolean.class;
+                    } else if (e instanceof Byte) {
+                        return byte.class;
+                    } else if (e instanceof Short) {
+                        return short.class;
+                    } else if (e instanceof Integer) {
+                        return int.class;
+                    } else if (e instanceof Long) {
+                        return long.class;
+                    } else if (e instanceof Float) {
+                        return float.class;
+                    } else if (e instanceof Double) {
+                        return double.class;
+                    } else if (e instanceof Character) {
+                        return char.class;
+                    }
+                    return e.getClass();
+                })
+
+                .toArray(Class[]::new);
     }
 
     public static Parameter[] getParameters(String clsPath, Object[] args) {
-        Class<?> cls = loadClass(clsPath);
+        return getParameters(loadClass(clsPath), args);
+    }
 
-        Constructor<?> constructor = getConstructor(cls, args);
+    public static <T> Parameter[] getParameters(Class<T> cls, Object[] args) {
+        Constructor<T> constructor = getConstructor(cls, args);
 
         return constructor.getParameters();
+    }
+
+    public static String[] getParameterNames(String clsPath, Object[] args) {
+        return getParameterNames(loadClass(clsPath), args);
+    }
+
+    public static <T> String[] getParameterNames(Class<T> cls, Object[] args) {
+        return Arrays.stream(
+                        getParameters(cls, args)
+                )
+                .map(Parameter::getName)
+                .toArray(String[]::new);
+    }
+
+    public static <T> String[] getParameterNames(String clsPath) {
+        return getParameterNames(loadClass(clsPath));
+    }
+
+    public static <T> String[] getParameterNames(Class<T> cls) {
+        Constructor<?> constructor = cls.getConstructors()[0];
+
+        return Arrays.stream(
+                        constructor.getParameters()
+                ).map(Parameter::getName)
+                .toArray(String[]::new);
+    }
+
+    public static Map<String, Class<?>> annotatedClasses(String prefix, Class<? extends Annotation> annotationCls) {
+        Reflections reflections = new Reflections(prefix, TypesAnnotated);
+
+        Map<String, Class<?>> clsMap = reflections
+                .getTypesAnnotatedWith(annotationCls)
+                .stream()
+                .filter(cls -> !cls.isAnnotation())
+                .collect(
+                        LinkedHashMap::new,
+                        (map, cls) -> map.put(Ut.str.lcfirst(cls.getSimpleName()), cls),
+                        Map::putAll
+                );
+
+        return clsMap;
     }
 }
