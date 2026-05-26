@@ -5,6 +5,7 @@ import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -37,6 +38,10 @@ public class ClsUtil {
         Class[] argType = getTypes(args);
 
         return cls.getConstructor(argType);
+    }
+
+    public  static <T> Constructor<T>  getConstructor(Class<T> cls) {
+        return (Constructor<T>) cls.getConstructors()[0];
     }
 
     private static Class[] getTypes(Object[] args) {
@@ -96,13 +101,22 @@ public class ClsUtil {
     }
 
     public static <T> String[] getParameterNames(Class<T> cls) {
-        Constructor<?> constructor = cls.getConstructors()[0];
+        Constructor<?> constructor = getConstructor(cls);
 
         return Arrays.stream(
                         constructor.getParameters()
                 ).map(Parameter::getName)
                 .toArray(String[]::new);
     }
+
+    public static String[] getParameterNames(Executable executable) {
+        return Arrays.stream(
+                        executable.getParameters()
+                )
+                .map(Parameter::getName)
+                .toArray(String[]::new);
+    }
+
 
     public static Map<String, Class<?>> annotatedClasses(String prefix, Class<? extends Annotation> annotationCls) {
         Reflections reflections = new Reflections(prefix, TypesAnnotated);

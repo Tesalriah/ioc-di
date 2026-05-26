@@ -26,6 +26,8 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.26.3")
     implementation("org.reflections:reflections:0.10.2")
     implementation("ch.qos.logback:logback-classic:1.5.12")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")
 }
 
 tasks.test {
