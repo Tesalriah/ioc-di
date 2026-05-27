@@ -2,6 +2,7 @@ package com.jnh.framework.ioc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.jnh.domain.testMail.service.TestMailLogService;
 import com.jnh.domain.testPost.testPost.repository.TestPostRepository;
 import com.jnh.domain.testPost.testPost.service.TestFacadePostService;
 import com.jnh.domain.testPost.testPost.service.TestPostService;
@@ -137,5 +138,36 @@ public class ApplicationContextTest {
         assertThat(beanDefinition.getBeanName()).isEqualTo("testBaseObjectMapper");
         assertThat(beanDefinition.getParameterNames()).containsExactly("testBaseJavaTimeModule");
         assertThat(beanDefinition.isCreateTypeMethod()).isTrue();
+    }
+
+    @Test
+    @DisplayName("applicationContext.beanDefinitions")
+    public void t13() {
+        assertThat(applicationContext.beanDefinitions)
+                .containsKey("testPostService")
+                .containsKey("testPostRepository")
+                .containsKey("testFacadePostService")
+                .containsKey("testBaseJavaTimeModule")
+                .containsKey("testBaseObjectMapper");
+    }
+
+    @Test
+    @DisplayName("testMailLogService 빈을 생성")
+    public void t14() {
+        TestMailLogService testMailLogService = applicationContext.getBean("testMailLogService");
+        assertThat(testMailLogService).isNotNull();
+
+//        assertThat(testMailLogService).hasFieldOrPropertyWithValue(
+//                "testFacadePostService",
+//                applicationContext.getBean("testFacadePostService")
+//        );
+        assertThat(testMailLogService).hasFieldOrPropertyWithValue(
+                "testMailLogRepository",
+                applicationContext.getBean("testMailLogRepository")
+        );
+//        assertThat(testMailLogService).hasFieldOrPropertyWithValue(
+//                "testSafeExts",
+//                applicationContext.getBean("testSafeExts")
+//        );
     }
 }

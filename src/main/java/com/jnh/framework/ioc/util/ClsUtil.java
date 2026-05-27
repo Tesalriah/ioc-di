@@ -33,15 +33,15 @@ public class ClsUtil {
         return constructor.newInstance(args);
     }
 
+    public  static <T> Constructor<T>  getConstructor(Class<T> cls) {
+        return (Constructor<T>) cls.getConstructors()[0];
+    }
+
     @SneakyThrows
     private static <T> Constructor<T>  getConstructor(Class<T> cls, Object[] args) {
         Class[] argType = getTypes(args);
 
         return cls.getConstructor(argType);
-    }
-
-    public  static <T> Constructor<T>  getConstructor(Class<T> cls) {
-        return (Constructor<T>) cls.getConstructors()[0];
     }
 
     private static Class[] getTypes(Object[] args) {
@@ -116,7 +116,6 @@ public class ClsUtil {
                 .map(Parameter::getName)
                 .toArray(String[]::new);
     }
-
 
     public static Map<String, Class<?>> annotatedClasses(String prefix, Class<? extends Annotation> annotationCls) {
         Reflections reflections = new Reflections(prefix, TypesAnnotated);
