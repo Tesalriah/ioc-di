@@ -48,8 +48,6 @@ public class ApplicationContext {
      * 실제 객체 생성은 하지 않고, "어떤 빈이 있는지" 목록만 만든다.
      */
     public void init() {
-        // @Component 클래스 목록 (genBean에서 사용)
-        this.beanClasses = ClsUtil.annotatedClasses(basePackage, Component.class);
 
         this.beanDefinitions = Stream.concat(
                 // (a) @Component -> 클래스 기반 BeanDefinition
@@ -94,21 +92,14 @@ public class ApplicationContext {
         Object bean = beans.get(beanName);
 
         if (bean == null) {
-            // 빈 이름으로 클래스 타입 조회
-            Class<T> cls = (Class<T>) beanClasses.get(beanName);
+            BeanDefinition<T> beanDefinition = beanDefinitions.get(beanName);
 
-            // 생성자 파라미터 이름들 = 주입받아야 할 의존성 빈 이름들
-            String[] parameterNames = ClsUtil.getParameterNames(cls);
+            if (beanDefinition == null) {
+                throw new RuntimeException(beanName + " 이름의 빈을 찾을 수 없습니다");
+            }
 
-            // 각 의존성을 재귀적으로 생성해서 인자 배열 구성
-            Object[] args = Arrays.stream(parameterNames)
-                    .map(this::getBean)
-                    .toArray();
+            bean = beanDefinition.createBean(this);
 
-            // 의존성을 모두 갖춰서 본인 객체 생성
-            bean = ClsUtil.construct(cls, args);
-
-            // 캐시에 저장 (다음 요청 시 재사용)
             beans.put(beanName, bean);
         }
         return (T) bean;

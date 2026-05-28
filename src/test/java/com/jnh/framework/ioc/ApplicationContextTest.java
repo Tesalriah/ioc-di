@@ -157,17 +157,17 @@ public class ApplicationContextTest {
         TestMailLogService testMailLogService = applicationContext.getBean("testMailLogService");
         assertThat(testMailLogService).isNotNull();
 
-//        assertThat(testMailLogService).hasFieldOrPropertyWithValue(
-//                "testFacadePostService",
-//                applicationContext.getBean("testFacadePostService")
-//        );
+        assertThat(testMailLogService).hasFieldOrPropertyWithValue(
+                "testFacadePostService",
+                applicationContext.getBean("testFacadePostService")
+        );
         assertThat(testMailLogService).hasFieldOrPropertyWithValue(
                 "testMailLogRepository",
                 applicationContext.getBean("testMailLogRepository")
         );
-//        assertThat(testMailLogService).hasFieldOrPropertyWithValue(
-//                "testSafeExts",
-//                applicationContext.getBean("testSafeExts")
-//        );
+        assertThat(testMailLogService).hasFieldOrPropertyWithValue(
+                "testSafeExts",
+                applicationContext.getBean("testSafeExts")
+        );
     }
 }
